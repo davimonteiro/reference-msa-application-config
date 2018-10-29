@@ -1,0 +1,93 @@
+spring:
+  application:
+    name: edge-service
+  profiles:
+    active: development
+server:
+  port: 9999
+management:
+  endpoints:
+    web.exposure.include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+---
+spring:
+  profiles: cloud
+zuul:
+  ignored-services: '*'
+  ignoredPatterns: /**/api/**
+  routes:
+    account-service: /account/**
+    payment-service: /payment/**
+    inventory-service: /inventory/**
+    order-service: /order/**
+    user-service: /user/**
+    catalog-service: /catalog/**
+    shopping-cart-service: /shoppingcart/**
+security:
+  oauth2:
+    resource:
+      userInfoUri: ${vcap.services.user-service.credentials.uri:http://localhost:8181}/uaa/user
+  ignored: /catalog/**
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 60000
+ribbon:
+  ConnectTimeout: 3000
+  ReadTimeout: 60000
+---
+spring:
+  profiles: development
+zuul:
+  ignored-services: '*'
+  ignoredPatterns: /**/api/**
+  routes:
+    account-service: /account/**
+    payment-service: /payment/**
+    inventory-service: /inventory/**
+    order-service: /order/**
+    user-service: /user/**
+    catalog-service: /catalog/**
+    shopping-cart-service: /shoppingcart/**
+security:
+  oauth2:
+    resource:
+      userInfoUri: http://localhost:8181/uaa/user
+  ignored: /catalog/**
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+---
+spring:
+  profiles: docker
+zuul:
+  ignored-services: '*'
+  ignoredPatterns: /**/api/**
+  routes:
+    account-service: /account/**
+    payment-service: /payment/**
+    inventory-service: /inventory/**
+    order-service: /order/**
+    user-service: /user/**
+    catalog-service: /catalog/**
+    shopping-cart-service: /shoppingcart/**
+security:
+  oauth2:
+    resource:
+      userInfoUri: http://${DOCKER_IP:192.168.99.100}:8181/uaa/user
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-service:8761/eureka/
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 60000
+ribbon:
+  ConnectTimeout: 3000
+  ReadTimeout: 60000
