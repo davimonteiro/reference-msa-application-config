@@ -11,12 +11,6 @@ management:
       show-details: ALWAYS    
 ---
 spring:
-  profiles: cloud
-  redis:
-    host: ${vcap.services.catalog-redis.credentials.hostname:localhost}
-    port: ${vcap.services.catalog-redis.credentials.port:6379}
----
-spring:
   profiles: development
   datasource:
     url: jdbc:h2:mem:app_db;DB_CLOSE_ON_EXIT=FALSE
@@ -60,3 +54,23 @@ spring:
   profiles: test
   jpa:
     database: H2
+---
+spring:
+  profiles: k8s
+  datasource:
+    url: jdbc:mysql://${MYSQL_IP}/dev
+    username: root
+    password: dbpass
+  jpa:
+    show-sql: false
+    generate-ddl: true
+    properties:
+      new_generator_mappings: false
+eureka:
+  instance:
+    prefer-ip-address: true
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_IP}/eureka/
